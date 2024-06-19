@@ -1,3 +1,4 @@
+import config from './package.json';
 import { EmbedYouTube } from './src/EmbedYouTube';
 import { Options, Func, ViewOptions } from './types/utils';
 
@@ -31,7 +32,7 @@ const deactivate = (): void => {
 if ((window as any).pluginActivators == null) {
   (window as any).pluginActivators = {};
 }
-(window as any).pluginActivators['growi-plugin-copy-code-to-clipboard2'] = {
+(window as any).pluginActivators[config.name] = {
   activate,
   deactivate,
 };
