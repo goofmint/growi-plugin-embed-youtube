@@ -3,9 +3,12 @@ import innerText from 'react-innertext';
 import './EmbedYouTube.css';
 
 const getYouTubeId = (href: string): string | null => {
-  const url = new URL(href);
-  const videoId = url.searchParams.get('v');
-  if (videoId) return videoId;
+  try {
+    const url = new URL(href);
+    const videoId = url.searchParams.get('v');
+    if (videoId) return videoId;
+  } catch (e) {
+  }
   return null;
 };
 
