@@ -25,13 +25,20 @@ export const EmbedYouTube = (A: React.FunctionComponent<any>): React.FunctionCom
       // check the URL domain is current domain
       try {
         const url = new URL(href);
-        if (url.hostname !== window.location.hostname) {
+        console.log({ url });
+        if (url.host !== window.location.host) {
           return (
             <>
               <a
                 {...props.node.properties}
                 target='_blank'
               >{children} <span className="growi-custom-icons">external_link</span></a>
+            </>
+          );
+        } else {
+          return (
+            <>
+              <a {...props.node.properties}>{children}</a>
             </>
           );
         }
