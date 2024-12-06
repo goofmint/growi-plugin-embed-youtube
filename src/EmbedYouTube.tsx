@@ -25,7 +25,6 @@ export const EmbedYouTube = (A: React.FunctionComponent<any>): React.FunctionCom
       // check the URL domain is current domain
       try {
         const url = new URL(href);
-        console.log({ url });
         if (url.host !== window.location.host) {
           return (
             <>
