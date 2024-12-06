@@ -22,11 +22,27 @@ export const EmbedYouTube = (A: React.FunctionComponent<any>): React.FunctionCom
   return ({ children, href, ...props }) => {
     const videoId = getYouTubeId(href);
     if (!videoId) {
-      return (
-        <>
-          <A {...props}>{children}</A>
-        </>
-      );
+      // check the URL domain is current domain
+      try {
+        const url = new URL(href);
+        if (url.hostname !== window.location.hostname) {
+          return (
+            <>
+              <a
+                {...props.node.properties}
+                target='_blank'
+              >{children} <span className="growi-custom-icons">external_link</span></a>
+            </>
+          );
+        }
+      }
+      catch (e) {
+        return (
+          <>
+            <a {...props.node.properties}>{children}</a>
+          </>
+        );
+      }
     }
     return (
       <div className="youtube">
