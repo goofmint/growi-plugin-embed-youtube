@@ -1,3 +1,7 @@
+import { h, Properties } from 'hastscript';
+import type { Plugin } from 'unified';
+import { Node } from 'unist';
+import { visit } from 'unist-util-visit';
 // import innerText from 'react-innertext';
 
 import './EmbedYouTube.css';
@@ -37,5 +41,44 @@ export const EmbedYouTube = (A: React.FunctionComponent<any>): React.FunctionCom
         ></iframe>
       </div>
     );
+  };
+};
+
+interface GrowiNode extends Node {
+  name: string;
+  data: {
+    hProperties?: Properties;
+    hName?: string;
+    hChildren?: Node[] | { type: string, value: string, url?: string }[];
+    [key: string]: any;
+  };
+  type: string;
+  attributes: {[key: string]: string}
+  children: GrowiNode[] | { type: string, value: string, url?: string }[];
+  value: string;
+  title?: string;
+  url?: string;
+}
+
+export const youtubePlugin: Plugin = () => {
+  return (tree: Node) => {
+    visit(tree, 'leafDirective', (node: Node) => {
+      const n = node as unknown as GrowiNode;
+      console.log(n);
+      if (n.name !== 'youtube') return;
+      const data = n.data || (n.data = {});
+      const id = n.children[0].value;
+      const {width, height, t} = n.attributes;
+      data.hName = 'iframe';
+      data.hChildren = [];
+      data.hProperties = {
+        src: `https://www.youtube.com/embed/${id}?${t ? '?&amp;start=' + t : ''}`,
+        width: width || 560,
+        height: height || 315,
+        frameBorder: 0,
+        allow: 'picture-in-picture',
+        allowFullScreen: true
+      };
+    });
   };
 };
