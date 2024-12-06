@@ -8,9 +8,12 @@ import './EmbedYouTube.css';
 
 const getYouTubeId = (href: string): string | null => {
   try {
+    // https://www.youtube.com/watch?v=xxxxxxx
     const url = new URL(href);
-    const videoId = url.searchParams.get('v');
-    if (videoId) return videoId;
+    if (url.host === 'www.youtube.com' && url.pathname === '/watch') {
+      const videoId = url.searchParams.get('v');
+      if (videoId) return videoId;
+    }
   }
   catch (e) {
     // do nothing
@@ -18,38 +21,51 @@ const getYouTubeId = (href: string): string | null => {
   return null;
 };
 
+const renderLink = (properties: any, children: string, text = false): JSX.Element => {
+  if (text) {
+    return (
+      <a {...properties}
+        dangerouslySetInnerHTML={{ __html: children }}
+      ></a>
+    );
+  } else {
+    return (
+      <a {...properties}>
+        {children}
+      </a>
+    );
+  }
+}
+
 export const EmbedYouTube = (A: React.FunctionComponent<any>): React.FunctionComponent<any> => {
   return ({ children, href, ...props }) => {
     const videoId = getYouTubeId(href);
     if (!videoId) {
       // check the URL domain is current domain
       try {
+        // only path is ignored
+        if (!href.match(/http.?:\/\//)) {
+          return renderLink(props.node.properties, children);
+        }
         const url = new URL(href);
         if (url.host !== window.location.host) {
-          return (
-            <>
-              <a
-                {...props.node.properties}
-                target='_blank'
-              >{children} <span className="growi-custom-icons">external_link</span></a>
-            </>
-          );
+          // External link
+          if (typeof children === 'string') {
+            return renderLink({...props.node.properties, target: '_blank'}, `${children} <span class="growi-custom-icons">external_link</span>`, true);
+          } else {
+            return renderLink({...props.node.properties, target: '_blank'}, children);
+          }
         } else {
-          return (
-            <>
-              <a {...props.node.properties}>{children}</a>
-            </>
-          );
+          // Internal link
+          return renderLink(props.node.properties, children);
         }
       }
       catch (e) {
-        return (
-          <>
-            <a {...props.node.properties}>{children}</a>
-          </>
-        );
+        // If an error occurs, return the original component
+        return renderLink(props.node.properties, children);
       }
     }
+    // if there is a videoId, render the YouTube component
     return (
       <div className="youtube">
         <iframe
@@ -86,7 +102,6 @@ export const youtubePlugin: Plugin = () => {
   return (tree: Node) => {
     visit(tree, 'leafDirective', (node: Node) => {
       const n = node as unknown as GrowiNode;
-      console.log(n);
       if (n.name !== 'youtube') return;
       const data = n.data || (n.data = {});
       const id = n.children[0].value;
